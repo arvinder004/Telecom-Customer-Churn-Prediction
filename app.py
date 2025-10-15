@@ -7,9 +7,7 @@ import streamlit as st
 from datetime import datetime
 
 
-# ---------------------------
 # Utilities: Artifact Loading
-# ---------------------------
 def get_latest_file(pattern: str) -> str | None:
     matches = glob.glob(pattern)
     if not matches:
@@ -22,7 +20,7 @@ def load_artifacts():
     """Load best model, preprocessor, and optional metadata from deployment/ or models/.
     Returns (model_or_pipeline, preprocessor, metadata_dict_or_none)
     """
-    # Prefer deployment artifacts (timestamped)
+
     deployment_dir = "deployment"
     models_dir = "models"
 
@@ -52,12 +50,10 @@ def load_artifacts():
         except Exception:
             preprocessor = None
 
-    # Fallback to earlier saved artifacts in models/
     if model is None:
         model = joblib.load(get_latest_file(os.path.join(models_dir, "best_*.pkl"))) if get_latest_file(os.path.join(models_dir, "best_*.pkl")) else None
 
     if preprocessor is None:
-        # prefer enhanced preprocessor, fallback to improved
         pre_path = get_latest_file(os.path.join(models_dir, "enhanced_preprocessor.pkl"))
         if pre_path is None:
             pre_path = get_latest_file(os.path.join(models_dir, "improved_preprocessor.pkl"))
@@ -66,9 +62,7 @@ def load_artifacts():
     return model, preprocessor, metadata
 
 
-# --------------------------------------
 # Feature Engineering (must match training)
-# --------------------------------------
 def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
     processed = df.copy()
 
@@ -90,10 +84,7 @@ def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
 
     return processed
 
-
-# ------------------------
 # Streamlit UI and Inference
-# ------------------------
 st.set_page_config(page_title="Telecom Churn Predictor", page_icon="📉", layout="centered")
 st.title("📉 Telecom Customer Churn Prediction")
 st.write("Enter customer details to predict churn probability. The app mirrors the training-time preprocessing and model.")
@@ -112,12 +103,12 @@ st.subheader("Input Features")
 
 col1, col2 = st.columns(2)
 with col1:
-    age = st.number_input("Age", min_value=18, max_value=100, value=45, step=1)
-    income = st.number_input("Annual Income ($)", min_value=10000, max_value=100000, value=55000, step=500)
-    usage_gb = st.number_input("Monthly Data Usage (GB)", min_value=1, max_value=100, value=50, step=1)
-    complaints = st.number_input("Complaints (last period)", min_value=0, max_value=10, value=4, step=1)
+    age = st.number_input("Age (18 - 100)", min_value=18, max_value=100, value=45, step=1)
+    income = st.number_input("Annual Income (10000$ - 100000$)", min_value=10000, max_value=100000, value=55000, step=500)
+    usage_gb = st.number_input("Monthly Data Usage (1GB - 100GB)", min_value=1, max_value=100, value=50, step=1)
+    complaints = st.number_input("Complaints (0 - 10)", min_value=0, max_value=10, value=4, step=1)
 with col2:
-    tenure_months = st.number_input("Tenure (months)", min_value=1, max_value=120, value=24, step=1)
+    tenure_months = st.number_input("Tenure (1 month - 120 months)", min_value=1, max_value=120, value=24, step=1)
     gender = st.selectbox("Gender", options=["female", "male"], index=0)
     plan_type = st.selectbox("Plan Type", options=["Postpaid", "Prepaid"], index=0)
 
@@ -125,7 +116,6 @@ if st.button("Predict Churn"):
     if model is None:
         st.stop()
 
-    # Construct single-row DataFrame with base features expected by training
     input_df = pd.DataFrame([
         {
             "age": age,
@@ -138,12 +128,9 @@ if st.button("Predict Churn"):
         }
     ])
 
-    # Apply the same advanced feature engineering
     input_df_adv = create_advanced_features(input_df)
 
-    # Try to predict using: (1) model-as-pipeline; (2) preprocessor + estimator
     try:
-        # Many saved artifacts are full pipelines; attempt direct predict_proba
         if hasattr(model, "predict_proba"):
             proba = model.predict_proba(input_df_adv)[0, 1]
             pred = int(proba >= 0.5)
