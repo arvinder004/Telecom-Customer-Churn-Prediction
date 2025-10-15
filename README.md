@@ -37,8 +37,8 @@ This project analyzes customer data to identify patterns that lead to customer c
 
 ## Files
 
-- `churn_training.ipynb`: Complete analysis and model training notebook
-- `churn_data.csv`: Generated synthetic dataset (10,000 records)
+- `BEST_MODEL.ipynb`: Main end-to-end notebook (training, tuning, export artifacts)
+- `datasets/churn_data.csv`: Generated synthetic dataset (10,000 records)
 - `README.md`: Project documentation
 
 ## Technologies Used
@@ -48,11 +48,43 @@ This project analyzes customer data to identify patterns that lead to customer c
 - **Visualization**: matplotlib, seaborn
 - **Model Evaluation**: ROC curves, Precision-Recall analysis
 
-## Usage
+## Streamlit App
 
-1. Open `churn_training.ipynb` in Jupyter Notebook
-2. Run all cells to reproduce the analysis
-3. Use the trained model to predict churn for new customers
+A ready-to-run Streamlit app is provided to interactively predict churn for a single customer.
+
+### Prerequisites
+
+- Python 3.10+
+- Recommended: a virtual environment
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Export Model Artifacts (if not already present)
+
+Run the `BEST_MODEL.ipynb` to generate and save artifacts into `deployment/` (preferred) or `models/` directories. The app will automatically pick the latest artifacts.
+
+Expected files:
+- `deployment/best_model_*.pkl` (or `models/best_*.pkl`)
+- `deployment/preprocessor_*.pkl` (or `models/enhanced_preprocessor.pkl`)
+- `deployment/model_metadata_*.pkl` (optional)
+
+### Run the App
+
+```bash
+streamlit run app.py
+```
+
+Open the URL shown in the terminal (typically `http://localhost:8501`).
+
+### Notes
+
+- The app recreates the same feature engineering used in training to ensure consistency.
+- If a full pipeline was saved, it is used directly. Otherwise, the app loads the preprocessor and applies it before prediction.
+- Artifacts are auto-discovered from `deployment/` first, then `models/` as a fallback.
 
 ## Business Impact
 
