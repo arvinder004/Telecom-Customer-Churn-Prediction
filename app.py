@@ -4,11 +4,11 @@ import joblib
 import pandas as pd
 import numpy as np
 import streamlit as st
-from datetime import datetime
+from typing import Optional
 
 
 # Utilities: Artifact Loading
-def get_latest_file(pattern: str) -> str | None:
+def get_latest_file(pattern: str) -> Optional[str]:
     matches = glob.glob(pattern)
     if not matches:
         return None
